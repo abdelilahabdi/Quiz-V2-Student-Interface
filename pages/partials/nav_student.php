@@ -1,14 +1,9 @@
 <?php
-/**
- * PARTIAL: Navigation Étudiant
- * Barre de navigation pour les étudiants
- */
 
-// Calculer les initiales
 $userName = $userName ?? $_SESSION['user_nom'] ?? 'User';
 $initials = strtoupper(substr($userName, 0, 1) . substr(explode(' ', $userName)[1] ?? '', 0, 1));
 
-// Déterminer le chemin de base selon l'emplacement du fichier
+
 $basePath = '';
 if (strpos($_SERVER['PHP_SELF'], '/student/') !== false) {
     $basePath = '../';

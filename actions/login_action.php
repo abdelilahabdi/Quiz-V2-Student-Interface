@@ -9,20 +9,20 @@ require_once '../classes/Database.php';
 require_once '../classes/Security.php';
 require_once '../classes/User.php';
 
-// Vérifier que c'est une requête POST
+// verifier que une requête POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../pages/auth/login.php');
     exit();
 }
 
-// Vérifier le token CSRF
+// verifier le token CSRF
 if (!isset($_POST['csrf_token']) || !Security::verifyCSRFToken($_POST['csrf_token'])) {
     $_SESSION['login_error'] = 'Token de sécurité invalide';
     header('Location: ../pages/auth/login.php');
     exit();
 }
 
-// Récupérer et nettoyer les données
+// Recuperer et nettoyer les données
 $email = Security::clean($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 

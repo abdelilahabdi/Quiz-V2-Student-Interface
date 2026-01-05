@@ -1,8 +1,5 @@
 <?php
-/**
- * Action: Soumettre un Quiz
- * Traite les réponses, calcule le score et enregistre le résultat
- */
+
 
 require_once '../config/database.php';
 require_once '../classes/Database.php';
@@ -11,28 +8,28 @@ require_once '../classes/Quiz.php';
 require_once '../classes/Question.php';
 require_once '../classes/Result.php';
 
-// Vérifier que l'utilisateur est étudiant
+// verifier utilisateur etudiant
 Security::requireStudent();
 
-// Vérifier la méthode POST
+// verifier methode post
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../pages/student/categories.php');
     exit();
 }
 
-// Vérifier le token CSRF
+// verifier le token crsf
 if (!isset($_POST['csrf_token']) || !Security::verifyCSRFToken($_POST['csrf_token'])) {
     $_SESSION['quiz_error'] = 'Token de sécurité invalide';
     header('Location: ../pages/student/categories.php');
     exit();
 }
 
-// Récupérer les données
+// recuperer les donnes
 $studentId = $_SESSION['user_id'];
 $quizId = intval($_POST['quiz_id'] ?? 0);
 $answers = $_POST['answers'] ?? [];
 
-// Validation
+// validation
 if ($quizId <= 0) {
     $_SESSION['quiz_error'] = 'Quiz invalide';
     header('Location: ../pages/student/categories.php');
@@ -45,12 +42,12 @@ if (empty($answers)) {
     exit();
 }
 
-// Créer les objets
+// creer les objets
 $quizObj = new Quiz();
 $questionObj = new Question();
 $resultObj = new Result();
 
-// Vérifier que le quiz est actif
+// verifier que le quiz actif
 $quiz = $quizObj->getActiveQuizById($quizId);
 if (!$quiz) {
     $_SESSION['quiz_error'] = 'Quiz non trouvé ou inactif';
@@ -58,14 +55,14 @@ if (!$quiz) {
     exit();
 }
 
-// Vérifier si déjà passé
+// verifier si deja passe
 if ($quizObj->hasStudentTakenQuiz($quizId, $studentId)) {
     $_SESSION['quiz_error'] = 'Vous avez déjà passé ce quiz';
     header('Location: ../pages/student/my_results.php');
     exit();
 }
 
-// Récupérer toutes les questions du quiz
+// recuperer toute les questions du quiz
 $questions = $questionObj->getAllByQuiz($quizId);
 
 if (empty($questions)) {
@@ -74,7 +71,7 @@ if (empty($questions)) {
     exit();
 }
 
-// Vérifier que toutes les questions ont été répondues
+// verifier que toutes les questions ont ete repondues
 $totalQuestions = count($questions);
 if (count($answers) < $totalQuestions) {
     $_SESSION['quiz_error'] = 'Vous devez répondre à toutes les questions';
@@ -82,9 +79,8 @@ if (count($answers) < $totalQuestions) {
     exit();
 }
 
-// ============================================
-// CALCUL DU SCORE
-// ============================================
+
+// calcul du score
 
 $score = 0;
 $detailedResults = [];
@@ -94,14 +90,14 @@ foreach ($questions as $question) {
     $correctOption = $question['correct_option'];
     $studentAnswer = intval($answers[$questionId] ?? 0);
     
-    // Vérifier si la réponse est correcte
+    // verifier reponse correcte
     $isCorrect = ($studentAnswer === $correctOption);
     
     if ($isCorrect) {
         $score++;
     }
     
-    // Stocker les détails pour affichage (optionnel)
+    // stocker les details pour affichage (optionnel)
     $detailedResults[] = [
         'question_id' => $questionId,
         'question' => $question['question'],
@@ -111,9 +107,9 @@ foreach ($questions as $question) {
     ];
 }
 
-// ============================================
-// ENREGISTREMENT DU RÉSULTAT
-// ============================================
+
+
+// enregistrement du resultat 
 
 $resultId = $resultObj->save($quizId, $studentId, $score, $totalQuestions);
 
@@ -123,19 +119,9 @@ if (!$resultId) {
     exit();
 }
 
-// ============================================
-// ENREGISTREMENT DES RÉPONSES (OPTIONNEL)
-// ============================================
-// Si vous voulez garder une trace des réponses individuelles
-/*
-foreach ($answers as $questionId => $answer) {
-    $questionObj->saveAnswer($studentId, $quizId, $questionId, $answer);
-}
-*/
 
-// ============================================
-// REDIRECTION VERS LA PAGE DE RÉSULTAT
-// ============================================
+
+
 
 $_SESSION['quiz_result'] = [
     'quiz_id' => $quizId,

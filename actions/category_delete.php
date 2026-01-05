@@ -23,7 +23,7 @@ if ($categoryId <= 0) {
 
 $category = new Category();
 
-// Vérifier si la catégorie a des quiz
+// verifier la categorie des quiz
 if ($category->hasQuizzes($categoryId)) {
     $_SESSION['category_error'] = 'Impossible de supprimer une catégorie contenant des quiz';
     header('Location: ../pages/teacher/categories.php');
